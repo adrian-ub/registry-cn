@@ -1,0 +1,59 @@
+{
+  "name": "registry-cn",
+  "type": "module",
+  "version": "0.0.0",
+  "packageManager": "pnpm@9.14.4",
+  "description": "Generate registry for cn components",
+  "author": "Adrián UB",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/adrian-ub",
+  "homepage": "https://github.com/adrian-ub/registry-cn#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrian-ub/registry-cn.git"
+  },
+  "bugs": "https://github.com/adrian-ub/registry-cn/issues",
+  "keywords": [
+    "registry",
+    "shadcn",
+    "plugin",
+    "astro"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "release": "bumpp && npm publish",
+    "typecheck": "astro check --minimumSeverity warning --noSync && pnpm --filter docs typecheck",
+    "prepare": "simple-git-hooks",
+    "docs": "nr -C docs dev",
+    "docs:build": "nr -C docs build"
+  },
+  "peerDependencies": {
+    "astro": ">=5.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@adrianub/eslint-config": "^0.0.4",
+    "astro": "^5.0.2",
+    "astro-eslint-parser": "^1.1.0",
+    "bumpp": "^9.9.2",
+    "eslint": "^9.15.0",
+    "eslint-plugin-astro": "^1.3.1",
+    "eslint-plugin-format": "^0.1.2",
+    "lint-staged": "^15.2.11",
+    "prettier-plugin-astro": "^0.14.1",
+    "simple-git-hooks": "^2.11.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  }
+}
