@@ -5,7 +5,7 @@
 [![JSDocs][jsdocs-src]][jsdocs-href]
 [![License][license-src]][license-href]
 
-Astro registry cn
+Registry cn
 
 ## Sponsors
 

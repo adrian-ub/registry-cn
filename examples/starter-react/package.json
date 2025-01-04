@@ -1,0 +1,25 @@
+{
+  "name": "starter-react",
+  "version": "0.0.0",
+  "description": "Example of a registry cn",
+  "author": "Adrián UB",
+  "license": "MIT",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "build": "registry-cn"
+  },
+  "dependencies": {
+    "@radix-ui/react-accordion": "^1.2.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "registry-cn": "workspace:*"
+  }
+}
