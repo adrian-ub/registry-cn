@@ -31,6 +31,7 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
+    "start": "tsx src/cli.ts",
     "prepublishOnly": "npm run build",
     "lint": "eslint .",
     "release": "bumpp && npm publish",
@@ -40,10 +41,21 @@
     "docs:build": "nr -C docs build"
   },
   "dependencies": {
-    "valibot": "1.0.0-beta.9"
+    "@clack/prompts": "^0.9.0",
+    "deepmerge": "^4.3.1",
+    "destr": "^2.0.3",
+    "fast-glob": "^3.3.2",
+    "json5": "^2.2.3",
+    "picocolors": "^1.1.1",
+    "ts-morph": "^25.0.0",
+    "unconfig": "^0.6.0",
+    "valibot": "1.0.0-beta.9",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@adrianub/eslint-config": "^0.0.4",
+    "@types/node": "^22.10.5",
+    "@types/yargs": "^17.0.33",
     "astro-eslint-parser": "^1.1.0",
     "bumpp": "^9.9.2",
     "eslint": "^9.15.0",
@@ -52,6 +64,7 @@
     "lint-staged": "^15.2.11",
     "prettier-plugin-astro": "^0.14.1",
     "simple-git-hooks": "^2.11.1",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "unbuild": "^3.2.0"
   },

@@ -11,6 +11,9 @@ import * as React from 'react'
 export const metaRegistry: RegistryItem = {
   name: 'accordion',
   type: 'registry:ui',
+  dependencies: [
+    '@radix-ui/react-accordion',
+  ],
 }
 
 const Accordion = AccordionPrimitive.Root

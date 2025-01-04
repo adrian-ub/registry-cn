@@ -4,7 +4,7 @@ import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 export const metaRegistry: RegistryItem = {
-  name: 'accordion',
+  name: 'utils',
   type: 'registry:lib',
 }
 

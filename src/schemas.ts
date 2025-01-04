@@ -24,6 +24,7 @@ export const registryItemCssVarsSchema = v.object({
 
 export const registryItemSchema = v.object({
   name: v.string(),
+  label: v.optional(v.string()),
   type: registryItemTypeSchema,
   description: v.optional(v.string()),
   dependencies: v.optional(v.array(v.string())),
