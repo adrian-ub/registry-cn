@@ -1,0 +1,158 @@
+---
+title: Getting Started
+---
+
+## Installation
+
+import { Steps, Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
+
+<Steps>
+
+1. Install it by running the following command in your terminal:
+
+      <Tabs syncKey="pkg">
+
+      <TabItem label="npm">
+
+      ```sh
+      npm install registry-cn
+      ```
+
+      </TabItem>
+
+      <TabItem label="pnpm">
+
+      ```sh
+      pnpm add registry-cn
+      ```
+
+      </TabItem>
+
+      <TabItem label="Yarn">
+
+      ```sh
+      yarn add registry-cn
+      ```
+
+      </TabItem>
+
+      </Tabs>
+
+2. Configure the package by editing the `registry.config.ts` file.
+
+    ```ts title="registry.config.ts"
+    import { defineConfig } from 'registry-cn'
+
+    export default defineConfig({
+      styles: [
+        {
+          name: 'default',
+          label: 'Default',
+          type: 'registry:style',
+        }
+      ]
+    })
+    ```
+
+3. Create a folder named `registry` in the root of your project.
+
+4. Create a folder named after the styles name inside the `registry` folder.
+
+    <FileTree>
+
+    - registry
+      - default
+        - ui **components**
+          - Button.tsx
+        - libs
+          - utils.ts
+    - package.json
+
+    </FileTree>
+
+5. Create a component
+
+    ```diff lang="tsx" title="Button.tsx"
+    import * as React from "react"
+    import { Slot } from "@radix-ui/react-slot"
+    import { cva, type VariantProps } from "class-variance-authority"
+
+    import { cn } from "@/lib/utils"
+
+    + import type { RegistryItem } from 'registry-cn'
+
+    + export const metaRegistry: RegistryItem = {
+    +  name: 'button',
+    +  type: 'registry:ui',
+    +  files: [
+    +    {
+    +      path: 'ui/button.tsx',
+    +      type: 'registry:ui',
+    +    },
+    +  ],
+    +  dependencies: [
+    +    '@radix-ui/react-slot',
+    +  ],
+    + }
+
+    const buttonVariants = cva(
+      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      {
+        variants: {
+          variant: {
+            default:
+              "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+            destructive:
+              "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+            outline:
+              "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+            secondary:
+              "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+            ghost: "hover:bg-accent hover:text-accent-foreground",
+            link: "text-primary underline-offset-4 hover:underline",
+          },
+          size: {
+            default: "h-9 px-4 py-2",
+            sm: "h-8 rounded-md px-3 text-xs",
+            lg: "h-10 rounded-md px-8",
+            icon: "h-9 w-9",
+          },
+        },
+        defaultVariants: {
+          variant: "default",
+          size: "default",
+        },
+      }
+    )
+
+    export interface ButtonProps
+      extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+        VariantProps<typeof buttonVariants> {
+      asChild?: boolean
+    }
+
+    const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+      ({ className, variant, size, asChild = false, ...props }, ref) => {
+        const Comp = asChild ? Slot : "button"
+        return (
+          <Comp
+            className={cn(buttonVariants({ variant, size, className }))}
+            ref={ref}
+            {...props}
+          />
+        )
+      }
+    )
+    Button.displayName = "Button"
+
+    export { Button, buttonVariants }
+
+    ```
+
+6. Run the following command to generate the registry:
+
+    ```sh
+    npx registry-cn
+    ```
+
+</Steps>

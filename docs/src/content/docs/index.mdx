@@ -1,0 +1,32 @@
+---
+title: Registry cn
+description: Generate your own registry for cn components
+template: splash
+editUrl: false
+hero:
+  tagline: Generate your own registry for cn components
+  actions:
+    - text: Get Started
+      link: /docs/
+      icon: right-arrow
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+<div class="container-section">
+  <div class="container-wrapper">
+    <div class="container">
+      ## Instalation
+
+      <CardGrid stagger>
+        <Card title="Install package" icon="puzzle">
+          Check the [getting started guide](/docs/) for installation instructions.
+        </Card>
+        <Card title="Configure the plugin" icon="setting">
+          Edit your config in the `registry.config.ts` file.
+        </Card>
+      </CardGrid>
+
+    </div>
+  </div>
+</div>
