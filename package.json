@@ -1,7 +1,7 @@
 {
   "name": "registry-cn",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packageManager": "pnpm@9.14.4",
   "description": "Generate registry for cn components",
   "author": "Adrián UB",
