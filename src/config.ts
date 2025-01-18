@@ -1,14 +1,12 @@
-import type { CommonOptions } from './types'
-
 import process from 'node:process'
-import deepmerge from 'deepmerge'
+
+import * as p from '@clack/prompts'
 import { createConfigLoader } from 'unconfig'
+import * as v from 'valibot'
+import { registryCnConfigSchema, type RegistryOutput } from './types'
 
-import { DEFAULT_OPTIONS } from './constants'
-
-export async function resolveConfig<T extends CommonOptions>(options: T & { _?: (string | number)[] }): Promise<T> {
-  const defaults = DEFAULT_OPTIONS
-  const loader = createConfigLoader<CommonOptions>({
+export async function resolveConfig(options: { cwd?: string }): Promise<RegistryOutput> {
+  const loader = createConfigLoader<RegistryOutput>({
     sources: [
       {
         files: ['registry.config'],
@@ -20,8 +18,17 @@ export async function resolveConfig<T extends CommonOptions>(options: T & { _?: 
 
   const config = await loader.load()
 
-  if (!config.sources.length)
-    return deepmerge(defaults, options as T) as T
+  if (!config.sources.length) {
+    p.log.error('No config file found')
+    process.exit(1)
+  }
 
-  return deepmerge(deepmerge(defaults, config.config), options as T) as T
+  const result = v.safeParse(registryCnConfigSchema, config.config)
+
+  if (!result.success) {
+    p.log.error(`Invalid registry configuration: ${result.issues.join(', ')}`)
+    process.exit(1)
+  }
+
+  return result.output
 }

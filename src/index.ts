@@ -1,7 +1,5 @@
-import type { RegistryOptions } from './types'
+import type { RegistryInput } from './types'
 
-export * from './types'
-
-export function defineConfig(config: RegistryOptions) {
+export function defineConfig(config: RegistryInput): RegistryInput {
   return config
 }

@@ -1,15 +1,12 @@
-import type { RegistryItem } from './schemas'
+import * as v from 'valibot'
+import { registrySchema } from './registry'
 
-export type { RegistryItem } from './schemas'
+export const registryCnConfigSchema = v.object({
+  root: v.optional(v.string(), '.'),
+  outDir: v.optional(v.string(), './public/r'),
+  clean: v.optional(v.boolean(), true),
+  styles: v.array(registrySchema),
+})
 
-export interface CommonOptions {
-  cwd?: string
-  registry?: string
-  fileExtensions?: string[]
-  output?: string
-  styles: RegistryItem[]
-}
-
-export interface RegistryOptions extends CommonOptions {
-
-}
+export type RegistryInput = v.InferInput<typeof registryCnConfigSchema>
+export type RegistryOutput = v.InferOutput<typeof registryCnConfigSchema>

@@ -1,182 +1,101 @@
-import type { SourceFile, VariableDeclaration } from 'ts-morph'
-import type { RegistryItem, RegistryOptions } from '../types'
+import type { RegistryOutput } from '../types'
 
 import fs from 'node:fs'
 import path from 'node:path'
+
+import process from 'node:process'
 import * as p from '@clack/prompts'
-import { safeDestr } from 'destr'
-import fg from 'fast-glob'
-import JSON5 from 'json5'
+
 import c from 'picocolors'
-import { Project } from 'ts-morph'
+import * as v from 'valibot'
 
-import pkgJson from '../../package.json'
+import { registryItemSchema, registrySchema } from '../registry'
 
-export async function build(options: RegistryOptions) {
-  const registryDirectory = path.join(options.cwd!, options.registry!)
-  const registryOutput = path.join(options.cwd!, options.output!)
-  const registryOutputStyles = path.join(registryOutput, 'styles')
-
-  const styles = options.styles
-  const components: { [key: string]: RegistryItem[] } = {}
-
-  const project = new Project()
-
-  for (const style of styles) {
-    createStyleDirectory(registryOutputStyles, style.name)
-    p.log.info(`Building ${c.green(style.name)} style`)
-    writeStyleIndexFile(registryOutputStyles, style)
-
-    components[style.name] = processStyle(style.name, registryDirectory, options, project)
+export async function build(config: RegistryOutput) {
+  if (config.clean) {
+    fs.rmSync(config.outDir, { recursive: true, force: true })
   }
 
-  writeRegistryStyleIndexFile(registryOutputStyles, styles)
-  writeRegistryIndexFile(registryOutput, components)
-
-  Object.entries(components).forEach(([styleName, registryComponents]) => {
-    registryComponents.forEach((component) => {
-      writeRegistryFile(registryOutput, styleName, component.name, component)
-    })
-  })
-
-  p.outro(c.green(`Build registry completed`))
+  buildStyles(config)
+  buildIndexJson(config)
 }
 
-function createStyleDirectory(registryOutputStyles: string, styleName: string) {
-  const styleDirectory = path.join(registryOutputStyles, styleName)
-  if (!fs.existsSync(styleDirectory)) {
-    fs.mkdirSync(styleDirectory, { recursive: true })
-  }
-}
+function buildStyles(config: RegistryOutput) {
+  for (const style of config.styles) {
+    const result = v.safeParse(registrySchema, style)
 
-function writeStyleIndexFile(registryOutputStyles: string, style: any) {
-  const styleIndexFile = path.join(registryOutputStyles, style.name, 'index.json')
-  fs.writeFileSync(styleIndexFile, JSON.stringify(style, null, 2))
-}
-
-function writeRegistryStyleIndexFile(registryOutputStyles: string, styles: any[]) {
-  const registryStyleIndex = styles.map(style => ({
-    name: style.name,
-    label: style.label || style.name,
-  }))
-  const registryStyleIndexContent = JSON.stringify(registryStyleIndex, null, 2)
-  fs.writeFileSync(path.join(registryOutputStyles, 'index.json'), registryStyleIndexContent)
-}
-
-function writeRegistryIndexFile(registryOutput: string, arrayComponents: { [key: string]: RegistryItem[] }) {
-  const registryComponentsByName = Object.values(arrayComponents).flat().reduce((acc: { [key: string]: RegistryItem }, component) => {
-    acc[component.name] = component
-    return acc
-  }, {})
-
-  const registryComponentsArray = Object.values(registryComponentsByName).map(component => ({
-    ...component,
-    files: component.files?.map(file => ({
-      path: file.path,
-      type: file.type,
-    })),
-  }))
-
-  const registryUiFilter = registryComponentsArray.filter(component => component.type === 'registry:ui')
-  const registryIndexContent = JSON.stringify(registryUiFilter, null, 2)
-  fs.writeFileSync(path.join(registryOutput, 'index.json'), registryIndexContent)
-}
-
-function processStyle(style: string, registryDirectory: string, options: RegistryOptions, project: Project): RegistryItem[] {
-  const registryDirectoryWithStyle = path.join(registryDirectory, style)
-  const files = fg.sync(`**/*.{${options.fileExtensions!.join(',')}}`, { cwd: registryDirectoryWithStyle })
-  const arrayComponents: RegistryItem[] = []
-
-  for (const file of files) {
-    const sourceFile = getSourceFile(project, registryDirectoryWithStyle, file)
-    const metaRegistryVariable = getMetaRegistryVariable(sourceFile)
-
-    if (!metaRegistryVariable) {
-      continue
+    if (!result.success) {
+      p.log.error(`Invalid registry configuration: ${result.issues.join(', ')}`)
+      process.exit(1)
     }
 
-    const metaRegistryValue = getMetaRegistryValue(metaRegistryVariable)
+    const buildSpinner = p.spinner()
+    buildSpinner.start(`Building ${c.bold(style.name)} registry`)
 
-    if (!metaRegistryValue) {
-      continue
-    }
-
-    updateMetaRegistryValue(metaRegistryValue, file, sourceFile)
-    arrayComponents.push(metaRegistryValue)
-  }
-
-  return arrayComponents
-}
-
-function updateMetaRegistryValue(metaRegistryValue: RegistryItem, file: string, sourceFile: SourceFile) {
-  const metaRegistryVariable = getMetaRegistryVariable(sourceFile)
-  if (metaRegistryVariable) {
-    removeMetaRegistryVariable(metaRegistryVariable)
-  }
-  removeRegistryImportDeclaration(sourceFile)
-
-  const modifiedContent = sourceFile.getFullText()
-
-  if (!metaRegistryValue.files?.length) {
-    metaRegistryValue.files = [
-      {
-        path: file,
-        content: modifiedContent,
-        type: metaRegistryValue.type,
-      },
-    ]
-  }
-  else {
-    metaRegistryValue.files.map((fileRegistry) => {
-      if (fileRegistry.path === file) {
-        fileRegistry.content = modifiedContent
+    for (const registryItem of result.output.items) {
+      if (!registryItem.files?.length) {
+        continue
       }
-      return fileRegistry
-    })
-  }
-}
 
-function writeRegistryFile(registryOutput: string, style: string, fileName: string, metaRegistryValue: RegistryItem) {
-  const registryStyleDirectory = path.join(registryOutput, 'styles', style)
-  const registryFile = path.join(registryStyleDirectory, `${fileName}.json`)
-  const registryContent = JSON.stringify(metaRegistryValue, null, 2)
+      buildSpinner.message(`Building ${c.bold(registryItem.name)} registry item`)
 
-  if (!fs.existsSync(registryStyleDirectory)) {
-    fs.mkdirSync(registryStyleDirectory, { recursive: true })
-  }
+      for (const file of registryItem.files) {
+        file.content = fs.readFileSync(
+          path.resolve(config.root, style.name, file.path),
+          'utf-8',
+        )
+      }
 
-  fs.writeFileSync(registryFile, registryContent)
-}
+      const result = v.safeParse(registryItemSchema, registryItem)
 
-function getSourceFile(project: Project, registryDirectoryWithStyle: string, file: string): SourceFile {
-  return project.addSourceFileAtPath(path.join(registryDirectoryWithStyle, file))
-}
+      if (!result.success) {
+        p.log.error(
+          `Invalid registry item found for ${c.blue(registryItem.name)}.`,
+        )
 
-function getMetaRegistryValue(metaRegistryVariable: VariableDeclaration): RegistryItem | undefined {
-  const initializer = metaRegistryVariable.getInitializer()
+        continue
+      }
 
-  if (!initializer) {
-    return
-  }
+      const outputFile = path.resolve(config.outDir, 'styles', style.name, `${result.output.name}.json`)
 
-  const content = initializer.getText()
-  const parsedContent = JSON5.parse(content)
+      fs.mkdirSync(path.dirname(outputFile), { recursive: true })
 
-  return safeDestr<RegistryItem>(parsedContent)
-}
-
-function removeMetaRegistryVariable(metaRegistryVariable: VariableDeclaration) {
-  metaRegistryVariable.remove()
-}
-
-function removeRegistryImportDeclaration(sourceFile: SourceFile) {
-  sourceFile.getImportDeclarations().forEach((importDeclaration) => {
-    if (importDeclaration.getModuleSpecifierValue() === pkgJson.name) {
-      importDeclaration.remove()
+      fs.writeFileSync(
+        outputFile,
+        JSON.stringify(result.output, null, 2),
+      )
     }
-  })
+
+    fs.writeFileSync(
+      path.resolve(config.outDir, 'styles', style.name, 'index.json'),
+      JSON.stringify({ ...result.output, items: undefined }, null, 2),
+    )
+
+    buildSpinner.stop(`Building ${c.bold(style.name)} registry`)
+  }
+
+  const styles = config.styles.map(({ name, label }) => ({ name, label }))
+  fs.writeFileSync(
+    path.resolve(config.outDir, 'styles', 'index.json'),
+    JSON.stringify(styles, null, 2),
+  )
 }
 
-function getMetaRegistryVariable(sourceFile: SourceFile): VariableDeclaration | undefined {
-  return sourceFile.getVariableDeclaration('metaRegistry')
+function buildIndexJson(config: RegistryOutput) {
+  const mergedItems = new Map<string, any>()
+
+  config.styles.forEach((style) => {
+    style.items.forEach((item) => {
+      if (!mergedItems.has(item.name)) {
+        mergedItems.set(item.name, item)
+      }
+    })
+  })
+
+  const itemsArray = Array.from(mergedItems.values())
+
+  fs.writeFileSync(
+    path.resolve(config.outDir, 'index.json'),
+    JSON.stringify(itemsArray, null, 2),
+  )
 }

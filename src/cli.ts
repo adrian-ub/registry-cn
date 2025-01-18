@@ -1,6 +1,3 @@
-import type { ArgumentsCamelCase, Argv } from 'yargs'
-import type { CommonOptions } from './types'
-
 import process from 'node:process'
 import * as p from '@clack/prompts'
 import c from 'picocolors'
@@ -10,27 +7,6 @@ import { hideBin } from 'yargs/helpers'
 import pkgJson from '../package.json'
 import { build } from './commands/build'
 import { resolveConfig } from './config'
-
-function commonOptions(args: Argv<object>): Argv<Partial<CommonOptions>> {
-  return args
-    .option('cwd', {
-      alias: 'c',
-      type: 'string',
-    })
-    .option('registry', {
-      alias: 'r',
-      type: 'string',
-    })
-    .option('output', {
-      alias: 'o',
-      type: 'string',
-    })
-    .option('fileExtensions', {
-      alias: 'e',
-      type: 'array',
-      string: true,
-    })
-}
 
 function header(): void {
   console.log('\n')
@@ -49,9 +25,13 @@ const cli = yargs(hideBin(process.argv))
 cli.command(
   '*',
   'Build',
-  args => commonOptions(args)
+  args => args
+    .option('cwd', {
+      alias: 'c',
+      type: 'string',
+    })
     .help(),
-  async (options: ArgumentsCamelCase<CommonOptions>) => {
+  async (options) => {
     header()
     try {
       await build(await resolveConfig(options))
