@@ -48,7 +48,19 @@ import { Steps, Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
         {
           name: 'default',
           label: 'Default',
-          type: 'registry:style',
+          homepage: 'https://registry-cn.vercel.app',
+          items: [
+            {
+              name: 'button',
+              type: 'registry:ui',
+              files: [
+                {
+                  path: 'ui/Button.tsx',
+                  type: 'registry:ui'
+                }
+              ]
+            }
+          ]
         }
       ]
     })
@@ -60,40 +72,23 @@ import { Steps, Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
 
     <FileTree>
 
-    - registry
-      - default
-        - ui **components**
-          - Button.tsx
-        - libs
-          - utils.ts
+    - default
+      - ui **components**
+        - Button.tsx
+      - libs
+        - utils.ts
     - package.json
 
     </FileTree>
 
 5. Create a component
 
-    ```diff lang="tsx" title="Button.tsx"
+    ```tsx title="default/ui/Button.tsx"
     import * as React from "react"
     import { Slot } from "@radix-ui/react-slot"
     import { cva, type VariantProps } from "class-variance-authority"
 
     import { cn } from "@/lib/utils"
-
-    + import type { RegistryItem } from 'registry-cn'
-
-    + export const metaRegistry: RegistryItem = {
-    +  name: 'button',
-    +  type: 'registry:ui',
-    +  files: [
-    +    {
-    +      path: 'ui/button.tsx',
-    +      type: 'registry:ui',
-    +    },
-    +  ],
-    +  dependencies: [
-    +    '@radix-ui/react-slot',
-    +  ],
-    + }
 
     const buttonVariants = cva(
       "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
