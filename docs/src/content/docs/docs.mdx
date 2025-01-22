@@ -59,6 +59,16 @@ import { Steps, Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
                   type: 'registry:ui'
                 }
               ]
+            },
+            {
+              name: 'utils',
+              type: 'registry:lib',
+              files: [
+                {
+                  path: 'lib/utils.ts',
+                  type: 'registry:lib',
+                },
+              ],
             }
           ]
         }
@@ -66,22 +76,21 @@ import { Steps, Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
     })
     ```
 
-3. Create a folder named `registry` in the root of your project.
-
-4. Create a folder named after the styles name inside the `registry` folder.
+3. Create a folder named after the styles.
 
     <FileTree>
 
     - default
       - ui **components**
         - Button.tsx
-      - libs
+      - lib
         - utils.ts
+    - registry.config.ts
     - package.json
 
     </FileTree>
 
-5. Create a component
+4. Create a component
 
     ```tsx title="default/ui/Button.tsx"
     import * as React from "react"
@@ -144,10 +153,27 @@ import { Steps, Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
 
     ```
 
-6. Run the following command to generate the registry:
+5. Run the following command to generate the registry:
 
     ```sh
     npx registry-cn
     ```
 
 </Steps>
+
+6. Verify that the registry was generated successfully.
+
+    <FileTree>
+
+    - public
+      - r
+        - styles
+          - default
+            - button.json
+            - index.json **style definition with dependencies**
+            - utils.json
+          - index.json **list of all styles**
+        - index.json **list of all components**
+    - ...
+
+    </FileTree>
