@@ -19,5 +19,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "exclude": ["examples"]
+  "include": ["docs/.astro/types.d.ts"],
+  "exclude": ["examples", "node_modules"]
 }

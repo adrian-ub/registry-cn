@@ -8,7 +8,16 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Registry cn',
-      plugins: [starlightThemeBlack()],
+      plugins: [
+        starlightThemeBlack({
+          navLinks: [
+            {
+              text: 'Docs',
+              slug: '/docs',
+            },
+          ],
+        }),
+      ],
       sidebar: [
         {
           label: 'Start Here',
@@ -17,6 +26,9 @@ export default defineConfig({
           ],
         },
       ],
+      social: {
+        github: 'https://github.com/adrian-ub/registry-cn',
+      },
     }),
   ],
 })
